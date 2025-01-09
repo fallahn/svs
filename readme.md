@@ -10,7 +10,7 @@ With that said, just what is the websocket server useful for? Mostly, with it be
  - Creating overlays for streaming. Custom score outputs or even map overlays (using the ball position updates) can be conjoured in a web page with relative ease.
  - More local player interaction. Multple connections can be made to a single golf client, meaning that perhaps players can each connect with their smart phones, and use those as additional inputs, such as voting for a new map, or player of the game.
  - Team play matches. By default Super Video Golf doesn't support golf teams, however with the current round's scores continually updated a web application can group players into teams and calculate the final score accordingly.
- - Real world leagues, where player scores are entered into a database such as SQLite that automatically calculates league standing.
+ - Real world leagues, where player scores are entered into a database such as SQLite that automatically calculates (and perpetuates) league standing.
  - Mirroring the scoreboard or other information on a secondary display. For multiplayer hotseat games having a permanent scoreboard up on another TV or monitor would be more convenient than relying on the in-game UI
 
 And I'm sure with some creative thinking that there could be many more applications 😁
@@ -26,18 +26,20 @@ Boiler plate functions written in javascript and information on how they work is
 
 For other languages below is a list of the raw packets sent by Super Video Golf and how they would be represented as a C style struct. From there I hope it should be relatively easy to extrapolate to other programming languages.
 
+Make sure all websocket clients are set to use "bytearray" as the binary type.
+
 
 
 Available Data
 --------------
-Data packets broadcast by Super Video Golf:
+Data packets broadcast by Super Video Golf (details below):
 
- - Player info: client ID, player ID and name. Sent from game lobby and when connecting mid-round
- - Position Updates <NA>
+ - Player info: Sent from game lobby and when connecting mid-round
  - Score Updates <NA>
  - Hole data (number, par, pin and tee position) <NA>
  - Game Info (course name, hole count, rules in use) <NA>
  - Rich presence strings <NA>
+ - Position Updates <NA>    
 
 
 
@@ -46,13 +48,27 @@ Packet Data
 
 Note PacketIDs are non-contiguous and should never be assumed to be so!
 
+    //each websocket packet is ID'd with one of the below, taking up exactly 1 byte, and the very beginning of the packet.
     enum PacketID
     {
-
+        Null               = -1;
+        PlayerInfo         = 50;
+        ScoreUpdate        = 12;
+        ClientDisconnected = 2;
+        PlayerPosition     = 22;
     }
 
+After the ID byte, each packet is then followed by one of these structs, packed as an array, depending on which ID the packet has.
 
 
+    //note that final packet size received from the websocket includes the entire name string in utf-8, appended to this struct
+    struct PlayerInfo
+    {
+        byte clientID;
+        byte playerID;
+        byte isCPU;
+        byte* nameStr;
+    };
 
 
 
