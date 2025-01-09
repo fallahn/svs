@@ -88,6 +88,20 @@ function onConnectClick()
 
             refreshPlayerList();
             break;
+        case PacketIDScoreUpdate:
+            GameScores[data.clientID][data.playerID].scores[data.hole] = data.score;
+            
+            refreshScoreboard();
+            break;
+        case PacketIDMapInfo:
+            CourseName = CourseNames[data.courseIndex];
+            HoleCount = HoleStrings[data.holeCount];
+            GameMode = RuleStrings[data.gameMode];
+            Weather = WeatherType[data.weatherType];
+            NightMode = data.nightMode != 0;
+            CurrentHole = data.currentHole;
+            refreshScoreboard();
+            break;
         }
     }
 
@@ -162,4 +176,63 @@ function refreshPlayerList()
             }
         }
     }
+}
+
+
+/*
+Updates the scoreboard in div_scoreboard_inner
+*/
+var CourseName = "";
+var HoleCount = ""; //0 All holes, 1 front nine, 2 back nine
+var GameMode = ";"
+var Weather = "";
+var NighMode = false;
+var CurrentHole = 0;
+
+function HoleScores()
+{
+    this.scores = new Array(18);
+    this.scores.fill(0);
+}
+
+var GameScores = 
+[
+    [new HoleScores(), new HoleScores(), new HoleScores(), new HoleScores(), new HoleScores(), new HoleScores(), new HoleScores(), new HoleScores(),],
+    [new HoleScores(), new HoleScores(), new HoleScores(), new HoleScores(), new HoleScores(), new HoleScores(), new HoleScores(), new HoleScores(),],
+    [new HoleScores(), new HoleScores(), new HoleScores(), new HoleScores(), new HoleScores(), new HoleScores(), new HoleScores(), new HoleScores(),],
+    [new HoleScores(), new HoleScores(), new HoleScores(), new HoleScores(), new HoleScores(), new HoleScores(), new HoleScores(), new HoleScores(),],
+    [new HoleScores(), new HoleScores(), new HoleScores(), new HoleScores(), new HoleScores(), new HoleScores(), new HoleScores(), new HoleScores(),],
+    [new HoleScores(), new HoleScores(), new HoleScores(), new HoleScores(), new HoleScores(), new HoleScores(), new HoleScores(), new HoleScores(),],
+    [new HoleScores(), new HoleScores(), new HoleScores(), new HoleScores(), new HoleScores(), new HoleScores(), new HoleScores(), new HoleScores(),],
+    [new HoleScores(), new HoleScores(), new HoleScores(), new HoleScores(), new HoleScores(), new HoleScores(), new HoleScores(), new HoleScores(),],
+];
+
+function refreshScoreboard()
+{
+    var outDiv = document.getElementById("div_scoreboard_inner");
+    outDiv.innerHTML = "";
+
+    var outString = "";
+
+    //TODO we need to sort these by score before setting the HTML
+    for (var i = 0; i < MaxClients; ++i)
+    {
+        for (var j = 0; j < MaxPlayers; ++j)
+        {
+            if (playerNames[i][j].name)
+            {
+                outString += playerNames[i][j].name + " - ";
+                for (var k = 0; k < 18; ++k)
+                {
+                    outString += GameScores[i][j].scores[k] + " ";
+                }
+                outString += "<br>";
+            }
+        }
+    }
+
+    var nightStr = NightMode ? " - Night" : " - Day";
+    outString += "<br>" + CourseName + " - " + HoleCount + " - " + GameMode + " - Weather: " + Weather + nightStr;
+
+    outDiv.innerHTML = outString;
 }

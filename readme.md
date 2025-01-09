@@ -36,18 +36,20 @@ Data packets broadcast by Super Video Golf (details below):
 
  - Player info: Sent from game lobby and when connecting mid-round
  - Client Disconnect: Sent when remote clients have disconnected from the game or lobby
- - Score Updates <NA>
+ - Score Updates: Sent on connection, and when the current player or hole changes.
+ - Map Info: Sent on round start and when connecting mid-round
  - Hole data (number, par, pin and tee position) <NA>
- - Game Info (course name, hole count, rules in use) <NA>
  - Rich presence strings <NA>
  - Position Updates <NA>    
 
+
+The websocket server can be queried from the Super Video Golf console (press F1), with the command `show_websock` which displays some rudimentary information such as host address if the server is running.
 
 
 Packet Data
 -----------
 
-Note PacketIDs are non-contiguous and should never be assumed to be so!
+Note PacketIDs are non-contiguous and should never be assumed to be so! Multi-byte data types (eg float or int32) are little-endian.
 
     //each websocket packet is ID'd with one of the below, taking up exactly 1 byte, and the very beginning of the packet.
     enum PacketID
@@ -56,6 +58,7 @@ Note PacketIDs are non-contiguous and should never be assumed to be so!
         PlayerInfo         = 50;
         ClientDisconnected = 2;        
         ScoreUpdate        = 12;
+        MapInfo            = 63;
         PlayerPosition     = 22;
     }
 
@@ -71,8 +74,36 @@ After the ID byte, each packet is then followed by one of these structs, packed 
         byte* nameStr;
     };
 
+
     //ClientDisconnect - contains a single byte with a client ID. All players on this client should be removed.
     byte clientID;
+
+
+    //not all fields are populated, based on the current game mode.
+    struct ScoreUpdate
+    {
+        float strokeDistance;
+        float distanceScore;
+        byte clientID;
+        byte playerID;
+        byte stroke;
+        byte hole;
+        byte score;
+        byte matchScore;
+        byte skinsScore;
+        byte padding;
+    };
+
+
+    struct MapInfo
+    {
+        byte courseIndex;
+        byte holeCount;
+        byte gameMode;        
+        byte weatherType;
+        byte nightMode;
+        byte currentHole;
+    };
 
 
 License

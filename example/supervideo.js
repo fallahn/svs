@@ -9,12 +9,63 @@ file provided in this repository at https://github.com/fallahn/svs.
 
 */
 
+
+const CourseNames = 
+[
+    "Westington Links, Isle of Pendale",
+    "Grove Bank, Mont Torville",
+    "Old Stemmer's Lane Pitch 'n' Putt",
+    "Roving Sands, East Nerringham",
+    "Sunny Cove, Weald & Hedgeways",
+    "Terdiman Cliffs Putting Course",
+    "Dackel's Run, Beneslavia",
+    "Moulin Plage, Île du Coulée",
+    "Purcitop Pitch 'n' Putt",
+    "Fairland Rock, Kingsfield",
+    "Nguyen Valley, Greyshale Province",
+    "Hertog Regis, Kaalsmeer",
+
+    "User Defined"
+];
+
+const HoleStrings = 
+[
+    "18 Holes",
+    "Front 9",
+    "Back 9"
+];
+
+const RuleStrings = 
+[
+    "Stroke Play", 
+    "Stableford", 
+    "Stableford Pro",
+    "Match Play",
+    "Skins",
+    "Multi-target",
+    "Short Round",
+    "Elimination",
+    "Clubset Shuffle",
+    "Nearest the Pin",
+    "Nearest the Pin+",
+];
+
+const WeatherType = 
+[
+    "Clear",
+    "Rain",
+    "Showers",
+    "Mist",
+    "Random"
+];
+
 //packet IDs are used to identify what has been collected from the incoming socket
 //Don't change these! They're set by the game server.
 const PacketIDNull = -1;
 const PacketIDPlayerInfo = 50;
 const PacketIDClientDisconnected = 2;
 const PacketIDScoreUpdate = 12;
+const PacketIDMapInfo = 63;
 const PacketIDPlayerPosition = 22;
 
 
@@ -68,8 +119,28 @@ function getPacketData(packet)
         return new PlayerInfo(client, player, name, isCPU != 0);
 
     case PacketIDClientDisconnected:
-
         return new ClientDisconnected(view.getUint8(1));
+
+    case PacketIDScoreUpdate:
+        return new ScoreUpdate(
+            view.getFloat32(1, true),
+            view.getFloat32(5, true),
+            view.getUint8(6),
+            view.getUint8(7),
+            view.getUint8(8),
+            view.getUint8(9),
+            view.getUint8(10),
+            view.getUint8(11),
+            view.getUint8(12));
+
+    case PacketIDMapInfo:
+        return new MapInfo(
+            view.getUint8(1),
+            view.getUint8(2),
+            view.getUint8(3),
+            view.getUint8(4),
+            view.getUint8(5),
+            view.getUint8(6));
     }
 
     return new NullPacket(id);
@@ -102,3 +173,31 @@ function ClientDisconnected(clientID)
     this.clientID = clientID;
 }
 ClientDisconnected.prototype.type = PacketIDClientDisconnected;
+
+
+//player score update
+function ScoreUpdate(strokeDistance, distanceScore, clientID, playerID, stroke, hole, score, matchScore, skinsScore)
+{
+    this.strokeDistance = strokeDistance;
+    this.distanceScore = distanceScore;
+    this.clientID = clientID;
+    this.playerID = playerID;
+    this.stroke = stroke;
+    this.hole = hole;
+    this.score = score;
+    this.matchScore = matchScore;
+    this.skinsScore = skinsScore;
+}
+ScoreUpdate.prototype.type = PacketIDScoreUpdate;
+
+//map/course information
+function MapInfo(courseIndex, holeCount, gameMode, weatherType, nightMode, currentHole)
+{
+    this.courseIndex = courseIndex;
+    this.holeCount = holeCount;
+    this.gameMode = gameMode;
+    this.weatherType = weatherType;
+    this.nightMode = nightMode;
+    this.currentHole = currentHole;
+}
+MapInfo.prototype.type = PacketIDMapInfo;
