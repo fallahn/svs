@@ -125,13 +125,13 @@ function getPacketData(packet)
         return new ScoreUpdate(
             view.getFloat32(1, true),
             view.getFloat32(5, true),
-            view.getUint8(6),
-            view.getUint8(7),
-            view.getUint8(8),
             view.getUint8(9),
             view.getUint8(10),
             view.getUint8(11),
-            view.getUint8(12));
+            view.getUint8(12),
+            view.getUint8(13),
+            view.getUint8(14),
+            view.getUint8(15));
 
     case PacketIDMapInfo:
         return new MapInfo(

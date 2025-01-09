@@ -90,7 +90,6 @@ function onConnectClick()
             break;
         case PacketIDScoreUpdate:
             GameScores[data.clientID][data.playerID].scores[data.hole] = data.score;
-            
             refreshScoreboard();
             break;
         case PacketIDMapInfo:
@@ -171,8 +170,8 @@ function refreshPlayerList()
         {
             if (playerNames[i][j].name)
             {
-                var cpu = playerNames[i][j].isCPU ? "T" : "F";
-                outDiv.innerHTML += "Client: " + i + ", Player: " + j + ", Is CPU: " + cpu + " - " + playerNames[i][j].name + "<br>";
+                var cpu = playerNames[i][j].isCPU ? "🤖" : "🧍";
+                outDiv.innerHTML += "Client: " + i + ", Player: " + j + ", " + cpu + " - " + playerNames[i][j].name + "<br>";
             }
         }
     }
@@ -186,7 +185,7 @@ var CourseName = "";
 var HoleCount = ""; //0 All holes, 1 front nine, 2 back nine
 var GameMode = ";"
 var Weather = "";
-var NighMode = false;
+var NightMode = false;
 var CurrentHole = 0;
 
 function HoleScores()
@@ -215,17 +214,29 @@ function refreshScoreboard()
     var outString = "";
 
     //TODO we need to sort these by score before setting the HTML
+    //TODO this only relevant in stroke play - demonstrate how to calculate
+    //stableford for example.
     for (var i = 0; i < MaxClients; ++i)
     {
         for (var j = 0; j < MaxPlayers; ++j)
         {
             if (playerNames[i][j].name)
             {
-                outString += playerNames[i][j].name + " - ";
                 for (var k = 0; k < 18; ++k)
                 {
-                    outString += GameScores[i][j].scores[k] + " ";
+                    outString += GameScores[i][j].scores[k] + " - ";
                 }
+
+                if(playerNames[i][j].isCPU)
+                {
+                    outString += "🤖 ";
+                }
+                else
+                {
+                    outString += "🧍 ";
+                }
+
+                outString += playerNames[i][j].name;
                 outString += "<br>";
             }
         }
