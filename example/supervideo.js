@@ -15,7 +15,7 @@ const PacketIDNull = -1;
 const PacketIDPlayerInfo = 50;
 const PacketIDPlayerPosition = 22;
 const PacketIDScoreUpdate = 12;
-
+const PacketIDClientDisconnected = 2;
 
 
 
@@ -53,36 +53,39 @@ function getPacketData(packet)
     switch(id)
     {
     default:
-        console.log("Packet ID is " + id);
-        return new NullPacket();
+        return new NullPacket(id);
 
     case PacketIDPlayerInfo:
         const client = view.getUint8(1);
         const player = view.getUint8(2);
+        const isCPU = view.getUint8(3);
 
         var decoder = new TextDecoder();
-        const name = decoder.decode(new Uint8Array(packet.data, 3));
+        const name = decoder.decode(new Uint8Array(packet.data, 4));
 
-        return new PlayerInfo(client, player, name);
+        return new PlayerInfo(client, player, name, isCPU != 0);
     }
 
-    return new NullPacket();
+    return new NullPacket(id);
 }
 
 /*
-Packet types
+------------------Packet types-------------------
 */
 
-function NullPacket()
+//packet is not identified as supported
+function NullPacket(id)
 {
-
+    console.log("Unhandled packet with ID " + id);
 }
 NullPacket.prototype.type = PacketIDNull;
 
-function PlayerInfo(clientID, playerID, name)
+//player name, client id and whether or not they are a bot
+function PlayerInfo(clientID, playerID, name, isCPU)
 {
     this.clientID = clientID;
     this.playerID = playerID;
     this.name = name;
+    this.isCPU = isCPU;
 }
 PlayerInfo.prototype.type = PacketIDPlayerInfo;

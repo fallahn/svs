@@ -1,75 +1,41 @@
+<!DOCTYPE html>
 <html>
     <head>
         <script src="supervideo.js"></script> 
-        <script type="text/javascript">
-         
-            var socket = null;
-
-            function printOutput(str)
-            {
-                document.getElementById("output").innerHTML = str;
-            }
-
-            function printSocketData(str)
-            {
-                document.getElementById("socket_data").innerHTML = str;
-            }
-
-
-
-
-            function onConnectClick()
-            {
-                if (socket != null)
-                {
-                    socket.close();
-                }
-                printSocketData("");
-
-                socket = new WebSocket("ws://" + document.getElementById("connect_box").value + ":8080");
-                socket.binaryType = "arraybuffer";
-
-                socket.onopen = function(evt)
-                {
-                    printOutput("Socket opened");
-                };
-
-                socket.onmessage = function(evt)
-                {
-                    var data = getPacketData(evt);
-                    
-                    if(data.type == PacketIDPlayerInfo)
-                    {
-                        printOutput("Client: " + data.clientID + ", player: " + data.playerID + " - " + data.name);
-                    }
-                    else
-                    {
-                        printOutput("Data type was " + data.type);
-                    }
-                }
-
-                socket.onclose = function(evt)
-                {
-                    printOutput("Socket closed: " + evt.code);
-                }
-            }
-
-            function onSendClick()
-            {
-                //document.getElementById("output").innerHTML = document.getElementById("message_box").value;
-                if (socket != null)
-                {
-                    socket.send(document.getElementById("message_box").value);
-                }
-            }
-
-
-        </script>
+        <script src="example.js"></script>
     </head>
     <body>
-        <p><input type="text" id="connect_box" name="connect_box"><button onclick="onConnectClick()" type="button" id="connect_button" name="connect_button">Connect</button></p>
-        <p><input type="text" id="message_box" name="message_box"><button onclick="onSendClick()" type="button" id="message_button" name="message_button">Send</button></p>
-        <p id="output"></p>
-        <p id="socket_data"></p>
+        <div id="div_connect">
+            <p>
+                Super Video Golf Host:<br><br>
+                Address:<input type="text" id="connect_box" name="connect_box" size="12" placeholder="127.0.0.1">
+                Port:<input type="text" id="port_box" name="port_box" size="6" placeholder="8080">
+                <button onclick="onConnectClick()" type="button" id="connect_button" name="connect_button">Connect</button>
+            </p>
+            <!--<p><input type="text" id="message_box" name="message_box"><button onclick="onSendClick()" type="button" id="message_button" name="message_button">Send</button></p>-->
+            <p id="output"></p>
+            <p id="socket_data"></p>
+        </div>
+        <hr>
+        <div id="div_namelist">
+            <p>Player List</p>
+            <div id="div_namelist_inner">
+            <!-- populated by example.js -->
+            </div>
+        </div>
+        <hr>
+        <div id="div_scoreboard">
+            <p>Scores</p>
+            <div id="div_scoreboard_inner">
+            <!-- populated by example.js -->
+            </div>
+        </div>
+        <hr>
+        <div id="div_map">
+            <p>Map</p>
+            <div id="div_map_inner">
+            <!-- populated by example.js -->
+            </div>
+        </div>
     </body>
 </html>
