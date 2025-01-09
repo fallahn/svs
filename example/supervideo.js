@@ -13,9 +13,11 @@ file provided in this repository at https://github.com/fallahn/svs.
 //Don't change these! They're set by the game server.
 const PacketIDNull = -1;
 const PacketIDPlayerInfo = 50;
-const PacketIDPlayerPosition = 22;
-const PacketIDScoreUpdate = 12;
 const PacketIDClientDisconnected = 2;
+const PacketIDScoreUpdate = 12;
+const PacketIDPlayerPosition = 22;
+
+
 
 
 
@@ -64,6 +66,10 @@ function getPacketData(packet)
         const name = decoder.decode(new Uint8Array(packet.data, 4));
 
         return new PlayerInfo(client, player, name, isCPU != 0);
+
+    case PacketIDClientDisconnected:
+
+        return new ClientDisconnected(view.getUint8(1));
     }
 
     return new NullPacket(id);
@@ -89,3 +95,10 @@ function PlayerInfo(clientID, playerID, name, isCPU)
     this.isCPU = isCPU;
 }
 PlayerInfo.prototype.type = PacketIDPlayerInfo;
+
+//client disconnected message
+function ClientDisconnected(clientID)
+{
+    this.clientID = clientID;
+}
+ClientDisconnected.prototype.type = PacketIDClientDisconnected;

@@ -35,6 +35,7 @@ Available Data
 Data packets broadcast by Super Video Golf (details below):
 
  - Player info: Sent from game lobby and when connecting mid-round
+ - Client Disconnect: Sent when remote clients have disconnected from the game or lobby
  - Score Updates <NA>
  - Hole data (number, par, pin and tee position) <NA>
  - Game Info (course name, hole count, rules in use) <NA>
@@ -53,8 +54,8 @@ Note PacketIDs are non-contiguous and should never be assumed to be so!
     {
         Null               = -1;
         PlayerInfo         = 50;
+        ClientDisconnected = 2;        
         ScoreUpdate        = 12;
-        ClientDisconnected = 2;
         PlayerPosition     = 22;
     }
 
@@ -70,6 +71,8 @@ After the ID byte, each packet is then followed by one of these structs, packed 
         byte* nameStr;
     };
 
+    //ClientDisconnect - contains a single byte with a client ID. All players on this client should be removed.
+    byte clientID;
 
 
 License

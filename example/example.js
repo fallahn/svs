@@ -58,15 +58,36 @@ function onConnectClick()
     {
         var data = getPacketData(evt);
         
-        if(data.type == PacketIDPlayerInfo)
+        switch (data.type)
         {
+        default:
+            printOutput("Data type was " + data.type);
+            break;
+        case PacketIDPlayerInfo:
             playerNames[data.clientID][data.playerID] = new PlayerEntry(data.name, data.isCPU);
 
             refreshPlayerList();
-        }
-        else
-        {
-            printOutput("Data type was " + data.type);
+            break;
+        case PacketIDClientDisconnected:
+            var names = "";
+
+            for (var i = 0; i < MaxPlayers; ++i)
+            {
+                if (playerNames[data.clientID][i].name)
+                {
+                    names += playerNames[data.clientID][i].name + ", ";
+                }
+
+                playerNames[data.clientID][i] = new PlayerEntry("", false);
+            }
+
+            if (names)
+            {
+                printOutput(names + " left the game");
+            }
+
+            refreshPlayerList();
+            break;
         }
     }
 
@@ -120,7 +141,7 @@ var playerNames =
 
     [new PlayerEntry("", false), new PlayerEntry("", false), new PlayerEntry("", false), new PlayerEntry("", false),
      new PlayerEntry("", false), new PlayerEntry("", false), new PlayerEntry("", false), new PlayerEntry("", false)],
-     
+
     [new PlayerEntry("", false), new PlayerEntry("", false), new PlayerEntry("", false), new PlayerEntry("", false),
      new PlayerEntry("", false), new PlayerEntry("", false), new PlayerEntry("", false), new PlayerEntry("", false)],
 ];
