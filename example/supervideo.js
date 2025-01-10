@@ -5,7 +5,7 @@ Super Video Golf is an arcade style golf game available on [itch.io](https://fal
 and [Steam](https://store.steampowered.com/app/2173760/Super_Video_Golf/).
 It provides a websocket server to which clients can connect and receive realtime updates.
 More info about how this works and what can be done with it is available in the readme.md
-file provided in this repository at https://github.com/fallahn/svs.
+file provided in the repository at https://github.com/fallahn/svs.
 
 */
 
@@ -183,6 +183,8 @@ function getPacketData(packet)
     return new NullPacket(id);
 }
 
+
+
 /*
 ------------------Packet types-------------------
 */
@@ -194,6 +196,7 @@ function NullPacket(id)
 }
 NullPacket.prototype.type = PacketIDNull;
 
+
 //player name, client id and whether or not they are a bot
 function PlayerInfo(clientID, playerID, name, isCPU)
 {
@@ -203,6 +206,7 @@ function PlayerInfo(clientID, playerID, name, isCPU)
     this.isCPU = isCPU;
 }
 PlayerInfo.prototype.type = PacketIDPlayerInfo;
+
 
 //client disconnected message
 function ClientDisconnected(clientID)
@@ -227,6 +231,7 @@ function ScoreUpdate(strokeDistance, distanceScore, clientID, playerID, stroke, 
 }
 ScoreUpdate.prototype.type = PacketIDScoreUpdate;
 
+
 //map/course information
 function MapInfo(courseIndex, holeCount, reverseOrder, gameMode, weatherType, nightMode, currentHole)
 {
@@ -240,6 +245,7 @@ function MapInfo(courseIndex, holeCount, reverseOrder, gameMode, weatherType, ni
 }
 MapInfo.prototype.type = PacketIDMapInfo;
 
+
 //information about a hole on the course
 //coords are OpenGL, Y-up
 function HoleInfo(holeIndex, par, teeX, teeY, teeZ, pinX, pinY, pinZ)
@@ -251,6 +257,7 @@ function HoleInfo(holeIndex, par, teeX, teeY, teeZ, pinX, pinY, pinZ)
 }
 HoleInfo.prototype.type = PacketIDHoleInfo;
 
+
 //currently active player
 function ActivePlayer(posX, posY, posZ, clientID, playerID, terrainID)
 {
@@ -260,6 +267,7 @@ function ActivePlayer(posX, posY, posZ, clientID, playerID, terrainID)
     this.terrainID = terrainID;
 }
 ActivePlayer.prototype.type = PacketIDActivePlayer;
+
 
 function RichPresence(string)
 {

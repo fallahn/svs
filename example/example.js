@@ -56,6 +56,7 @@ function onConnectClick()
         printSocketData("Socket opened");
     };
 
+    //main packet handling
     socket.onmessage = function(evt)
     {
         //decode the packet using supervideo.js
@@ -74,6 +75,7 @@ function onConnectClick()
             break;
 
         case PacketIDClientDisconnected:
+            //all the players on this client will have been removed
             var names = "";
 
             for (var i = 0; i < MaxPlayers; ++i)
@@ -96,6 +98,9 @@ function onConnectClick()
             break;
 
         case PacketIDScoreUpdate:
+            //this only tracks stroke play - data also contains fields
+            //for skins/match play etc. See the readme or supervideo.js
+            //for more information about the score data available.
             gameScores[data.clientID][data.playerID].scores[data.hole] = data.stroke;
             refreshScoreboard();
             break;
@@ -113,7 +118,7 @@ function onConnectClick()
 
         case PacketIDHoleInfo:
             holeData[data.index] = data;
-            currentHole = data.index; //hmm this is only true when switching holes, not on initial connection, where the MapInfo should take precedence
+            currentHole = data.index;
             refreshScoreboard();
             break;
 
@@ -143,6 +148,9 @@ function onSendClick()
 }
 
 
+/*
+Clears any output in the HTML file
+*/
 function resetDisplay()
 {
     for (var i = 0; i < MaxClients; ++i)
@@ -172,10 +180,10 @@ function resetDisplay()
 }
 
 
+
 /*
 Updates the player name list display in div_namelist_inner
 */
-
 const MaxClients = 8;
 const MaxPlayers = 8; //per client
 
@@ -229,6 +237,8 @@ function refreshPlayerList()
         }
     }
 }
+
+
 
 
 /*
@@ -334,6 +344,7 @@ function refreshScoreboard()
 
             outString += " -- Total: " + sortArray[i].total;
 
+            //use emojis to signal if player is a bot or not
             if (sortArray[i].isCPU)
             {
                 outString += " 🤖 ";
@@ -393,6 +404,9 @@ function refreshScoreboard()
     outDiv.innerHTML = outString;
 }
 
-/* list of holes which make up the course, as HoleInfo objects */
+/*
+list of holes which make up the course, as HoleInfo objects 
+This is where we store all the par values and pin/tee positions
+*/
 var holeData = new Array(18);
 holeData.fill(new HoleInfo(0,0,0,0,0,0,0,0));
