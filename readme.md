@@ -39,7 +39,8 @@ Data packets broadcast by Super Video Golf (details below):
  - Client Disconnect: Sent when remote clients have disconnected from the game or lobby
  - Score Updates: Sent on connection, and when the current player or hole changes.
  - Map Info: Sent on round start and when connecting mid-round
- - Hole data (number, par, pin and tee position) <NA>
+ - Hole data: Sent on round start, when first connecting
+ - Active Player: Sent on connection and when current player is changed <NA>
  - Rich presence strings <NA>
  - Position Updates <NA>    
 
@@ -61,6 +62,8 @@ Note PacketIDs are non-contiguous and should never be assumed to be so! Multi-by
         ClientDisconnected = 2;        
         ScoreUpdate        = 12;
         MapInfo            = 63;
+        HoleInfo           = 10;
+        ActivePlayer       = 9;
         PlayerPosition     = 22;
     }
 
@@ -103,11 +106,38 @@ After the ID byte, each packet is then followed by one of these structs, packed 
     {
         byte courseIndex;
         byte holeCount;
-        byte gameMode;        
+        byte reverseOrder;
+        byte gameMode;
         byte weatherType;
         byte nightMode;
         byte currentHole;
     };
+
+
+    //OpenGL coordinates, eg Y-up
+    struct HoleInfo
+    {
+        byte index;
+        byte par;
+        float teeX;
+        float teeY;
+        float teeZ;
+        float pinX;
+        float pinY;
+        float pinZ
+    };
+
+
+    //again, OpenGL coords, Y-up
+    struct ActivePlayer
+    {
+        float posX;
+        float posY;
+        float posZ;
+        byte clientID;
+        byte playerID;
+        byte terrainID;
+    }
 
 
 License

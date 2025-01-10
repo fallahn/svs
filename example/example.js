@@ -96,11 +96,21 @@ function onConnectClick()
             break;
         case PacketIDMapInfo:
             CourseName = CourseNames[data.courseIndex];
-            HoleCount = HoleStrings[data.holeCount];
+            HoleCount = data.holeCount;
+            ReverseOrder = data.reverseOrder != 0;
             GameMode = RuleStrings[data.gameMode];
             Weather = WeatherType[data.weatherType];
             NightMode = data.nightMode != 0;
             CurrentHole = data.currentHole;
+            refreshScoreboard();
+            break;
+        case PacketIDHoleInfo:
+            HoleData[data.index] = data;
+            CurrentHole = data.index; //hmm this is only true when switching holes, not on initial connection, where the MapInfo should take precedence
+            refreshScoreboard();
+            break;
+        case PacketIDActivePlayer:
+            CurrentPlayer = data;
             refreshScoreboard();
             break;
         }
@@ -184,11 +194,14 @@ function refreshPlayerList()
 Updates the scoreboard in div_scoreboard_inner
 */
 var CourseName = "";
-var HoleCount = ""; //0 All holes, 1 front nine, 2 back nine
+var HoleCount = 0; //0 All holes, 1 front nine, 2 back nine
+var ReverseOrder = false; //if we're playing the selected holes in reverse
 var GameMode = ";"
 var Weather = "";
 var NightMode = false;
 var CurrentHole = 0;
+
+var CurrentPlayer = new ActivePlayer(0,0,0,0,0,0);
 
 function HoleScores()
 {
@@ -262,6 +275,13 @@ function refreshScoreboard()
         sortArray.sort(sortFunc);
 
 
+        //grab the par for each hole
+        for (var i = 0; i < 18; ++i)
+        {
+            outString += HoleData[i].par + " - ";
+        }
+        outString += "-- Par<br>";
+
 
         //and output the results to HTML
         for (var i = 0; i < sortArray.length; ++i)
@@ -293,9 +313,45 @@ function refreshScoreboard()
         outString += GameMode + ": Example not implemented, see example.js refreshScoreboard()";
     }
 
+    
+    //CurrentHole is an index into the data array
+    //so we need to correct for reverse course or
+    //back nine before displaying it
+    var hole = CurrentHole;
+    if (ReverseOrder)
+    {
+        switch (HoleCount)
+        {
+        case 0:
+            hole = 18 - hole;
+            break;
+        case 1:
+            hole = 9 - hole;
+            break;
+        case 2:
+            hole = 9 - hole;
+            hole += 9;
+            break;
+        }
+    }
+    else
+    {
+        if (HoleCount == 2)
+        {
+            hole += 9;
+        }
+        hole += 1;
+    }
+
+
+    outString += "<br>Current Hole: " + hole + ", Current Player: " + playerNames[CurrentPlayer.clientID][CurrentPlayer.playerID].name + ", Terrain: " + TerrainStrings[CurrentPlayer.terrainID];
 
     var nightStr = NightMode ? " - Night" : " - Day";
-    outString += "<br>" + CourseName + " - " + HoleCount + " - " + GameMode + " - Weather: " + Weather + nightStr;
+    outString += "<br>" + CourseName + " - " + HoleStrings[HoleCount] + " - " + GameMode + " - Weather: " + Weather + nightStr;
 
     outDiv.innerHTML = outString;
 }
+
+/* list of holes which make up the course, as HoleInfo objects */
+var HoleData = new Array(18);
+HoleData.fill(new HoleInfo(0,0,0,0,0,0,0,1));

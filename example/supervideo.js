@@ -59,16 +59,29 @@ const WeatherType =
     "Random"
 ];
 
+const TerrainStrings = 
+[
+    "Rough",
+    "Fairway",
+    "Green",
+    "Bunker",
+    "Water",
+    "Scrub",
+    "Stone",
+    "Hole"
+];
+
+
 //packet IDs are used to identify what has been collected from the incoming socket
 //Don't change these! They're set by the game server.
-const PacketIDNull = -1;
-const PacketIDPlayerInfo = 50;
+const PacketIDNull               = -1;
+const PacketIDPlayerInfo         = 50;
 const PacketIDClientDisconnected = 2;
-const PacketIDScoreUpdate = 12;
-const PacketIDMapInfo = 63;
-const PacketIDPlayerPosition = 22;
-
-
+const PacketIDScoreUpdate        = 12;
+const PacketIDMapInfo            = 63;
+const PacketIDHoleInfo           = 10;
+const PacketIDActivePlayer       = 9;
+const PacketIDPlayerPosition     = 22;
 
 
 
@@ -140,7 +153,26 @@ function getPacketData(packet)
             view.getUint8(3),
             view.getUint8(4),
             view.getUint8(5),
-            view.getUint8(6));
+            view.getUint8(6),
+            view.getUint8(7));
+
+    case PacketIDHoleInfo:
+        return new HoleInfo(
+            view.getUint8(1),
+            view.getUint8(2),
+            view.getFloat32(3, true),
+            view.getFloat32(7, true),
+            view.getFloat32(11, true),
+            view.getFloat32(15, true));
+
+    case PacketIDActivePlayer:
+        return new ActivePlayer(
+            view.getFloat32(1, true),
+            view.getFloat32(5, true),
+            view.getFloat32(9, true),
+            view.getUint8(13),
+            view.getUint8(14),
+            view.getUint8(15));
     }
 
     return new NullPacket(id);
@@ -191,13 +223,35 @@ function ScoreUpdate(strokeDistance, distanceScore, clientID, playerID, stroke, 
 ScoreUpdate.prototype.type = PacketIDScoreUpdate;
 
 //map/course information
-function MapInfo(courseIndex, holeCount, gameMode, weatherType, nightMode, currentHole)
+function MapInfo(courseIndex, holeCount, reverseOrder, gameMode, weatherType, nightMode, currentHole)
 {
     this.courseIndex = courseIndex;
     this.holeCount = holeCount;
+    this.reverseOrder = reverseOrder;
     this.gameMode = gameMode;
     this.weatherType = weatherType;
     this.nightMode = nightMode;
     this.currentHole = currentHole;
 }
 MapInfo.prototype.type = PacketIDMapInfo;
+
+//information about a hole on the course
+//coords are OpenGL, Y-up
+function HoleInfo(holeIndex, par, teeX, teeY, teeZ, pinX, pinY, pinZ)
+{
+    this.index = holeIndex;
+    this.par = par;
+    this.teePosition = [teeX, teeY, teeZ];
+    this.pinPosition = [pinX, pinY, pinZ];
+}
+HoleInfo.prototype.type = PacketIDHoleInfo;
+
+//currently active player
+function ActivePlayer(posX, posY, posZ, clientID, playerID, terrainID)
+{
+    this.position = [posX, posY, posZ];
+    this.clientID = clientID;
+    this.playerID = playerID;
+    this.terrainID = terrainID;
+}
+ActivePlayer.prototype.type = PacketIDActivePlayer;
