@@ -40,8 +40,8 @@ Data packets broadcast by Super Video Golf (details below):
  - Score Updates: Sent on connection, and when the current player or hole changes.
  - Map Info: Sent on round start and when connecting mid-round
  - Hole data: Sent on round start, when first connecting
- - Active Player: Sent on connection and when current player is changed <NA>
- - Rich presence strings <NA>
+ - Active Player: Sent on connection and when current player is changed
+ - Rich presence strings: Rather than a struct these are sent as a single utf-8 encoded byte array
  - Position Updates <NA>    
 
 
@@ -65,6 +65,7 @@ Note PacketIDs are non-contiguous and should never be assumed to be so! Multi-by
         HoleInfo           = 10;
         ActivePlayer       = 9;
         PlayerPosition     = 22;
+        RichPresence       = 127;
     }
 
 After the ID byte, each packet is then followed by one of these structs, packed as an array, depending on which ID the packet has.

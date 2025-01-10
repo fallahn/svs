@@ -67,11 +67,12 @@ function onConnectClick()
         default:
             printOutput("Data type was " + data.type);
             break;
+
         case PacketIDPlayerInfo:
             playerNames[data.clientID][data.playerID] = new PlayerEntry(data.name, data.isCPU);
-
             refreshPlayerList();
             break;
+
         case PacketIDClientDisconnected:
             var names = "";
 
@@ -91,11 +92,14 @@ function onConnectClick()
             }
 
             refreshPlayerList();
+            refreshScoreboard();
             break;
+
         case PacketIDScoreUpdate:
             gameScores[data.clientID][data.playerID].scores[data.hole] = data.stroke;
             refreshScoreboard();
             break;
+
         case PacketIDMapInfo:
             courseName = CourseNames[data.courseIndex];
             holeCount = data.holeCount;
@@ -106,14 +110,20 @@ function onConnectClick()
             currentHole = data.currentHole;
             refreshScoreboard();
             break;
+
         case PacketIDHoleInfo:
             holeData[data.index] = data;
             currentHole = data.index; //hmm this is only true when switching holes, not on initial connection, where the MapInfo should take precedence
             refreshScoreboard();
             break;
+
         case PacketIDActivePlayer:
             currentPlayer = data;
             refreshScoreboard();
+            break;
+
+        case PacketIDRichPresence:
+            document.getElementById("rich_presence").innerHTML = data.string;
             break;
         }
     }
@@ -156,6 +166,7 @@ function resetDisplay()
     currentPlayer = new ActivePlayer(0,0,0,0,0,1);
     holeData.fill(new HoleInfo(0,0,0,0,0,0,0,0));
 
+    document.getElementById("rich_presence").innerHTML = "";
     document.getElementById("div_namelist_inner").innerHTML = "";
     document.getElementById("div_scoreboard_inner").innerHTML = "";
 }

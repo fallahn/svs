@@ -82,7 +82,7 @@ const PacketIDMapInfo            = 63;
 const PacketIDHoleInfo           = 10;
 const PacketIDActivePlayer       = 9;
 const PacketIDPlayerPosition     = 22;
-
+const PacketIDRichPresence       = 127;
 
 
 /*
@@ -173,6 +173,11 @@ function getPacketData(packet)
             view.getUint8(13),
             view.getUint8(14),
             view.getUint8(15));
+
+    case PacketIDRichPresence:
+        var decoder = new TextDecoder();
+        const str = decoder.decode(new Uint8Array(packet.data, 1));
+        return new RichPresence(str);
     }
 
     return new NullPacket(id);
@@ -255,3 +260,9 @@ function ActivePlayer(posX, posY, posZ, clientID, playerID, terrainID)
     this.terrainID = terrainID;
 }
 ActivePlayer.prototype.type = PacketIDActivePlayer;
+
+function RichPresence(string)
+{
+    this.string = string;
+}
+RichPresence.prototype.type = PacketIDRichPresence;
