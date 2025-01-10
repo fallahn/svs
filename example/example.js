@@ -33,6 +33,8 @@ function onConnectClick()
     }
     printSocketData("");
 
+    resetDisplay();
+
     var address = document.getElementById("connect_box").value;
     if (!address)
     {
@@ -91,26 +93,26 @@ function onConnectClick()
             refreshPlayerList();
             break;
         case PacketIDScoreUpdate:
-            GameScores[data.clientID][data.playerID].scores[data.hole] = data.stroke;
+            gameScores[data.clientID][data.playerID].scores[data.hole] = data.stroke;
             refreshScoreboard();
             break;
         case PacketIDMapInfo:
-            CourseName = CourseNames[data.courseIndex];
-            HoleCount = data.holeCount;
-            ReverseOrder = data.reverseOrder != 0;
-            GameMode = RuleStrings[data.gameMode];
-            Weather = WeatherType[data.weatherType];
-            NightMode = data.nightMode != 0;
-            CurrentHole = data.currentHole;
+            courseName = CourseNames[data.courseIndex];
+            holeCount = data.holeCount;
+            reverseOrder = data.reverseOrder != 0;
+            gameMode = RuleStrings[data.gameMode];
+            weather = WeatherType[data.weatherType];
+            nightMode = data.nightMode != 0;
+            currentHole = data.currentHole;
             refreshScoreboard();
             break;
         case PacketIDHoleInfo:
-            HoleData[data.index] = data;
-            CurrentHole = data.index; //hmm this is only true when switching holes, not on initial connection, where the MapInfo should take precedence
+            holeData[data.index] = data;
+            currentHole = data.index; //hmm this is only true when switching holes, not on initial connection, where the MapInfo should take precedence
             refreshScoreboard();
             break;
         case PacketIDActivePlayer:
-            CurrentPlayer = data;
+            currentPlayer = data;
             refreshScoreboard();
             break;
         }
@@ -128,6 +130,34 @@ function onSendClick()
     {
         socket.send(document.getElementById("message_box").value);
     }
+}
+
+
+function resetDisplay()
+{
+    for (var i = 0; i < MaxClients; ++i)
+    {
+        for (var j = 0; j < MaxPlayers; ++j)
+        {
+            playerNames[i][j] = new PlayerEntry("", false);
+            gameScores[i][j] = new HoleScores();
+        }
+    }
+
+
+    courseName = "";
+    holeCount = 0;
+    reverseOrder = false;
+    gameMode = ";"
+    weather = "";
+    nightMode = false;
+    currentHole = 0;
+
+    currentPlayer = new ActivePlayer(0,0,0,0,0,1);
+    holeData.fill(new HoleInfo(0,0,0,0,0,0,0,0));
+
+    document.getElementById("div_namelist_inner").innerHTML = "";
+    document.getElementById("div_scoreboard_inner").innerHTML = "";
 }
 
 
@@ -193,15 +223,15 @@ function refreshPlayerList()
 /*
 Updates the scoreboard in div_scoreboard_inner
 */
-var CourseName = "";
-var HoleCount = 0; //0 All holes, 1 front nine, 2 back nine
-var ReverseOrder = false; //if we're playing the selected holes in reverse
-var GameMode = ";"
-var Weather = "";
-var NightMode = false;
-var CurrentHole = 0;
+var courseName = "";
+var holeCount = 0; //0 All holes, 1 front nine, 2 back nine
+var reverseOrder = false; //if we're playing the selected holes in reverse
+var gameMode = ";"
+var weather = "";
+var nightMode = false;
+var currentHole = 0;
 
-var CurrentPlayer = new ActivePlayer(0,0,0,0,0,0);
+var currentPlayer = new ActivePlayer(0,0,0,0,0,1);
 
 function HoleScores()
 {
@@ -209,7 +239,7 @@ function HoleScores()
     this.scores.fill(0);
 }
 
-var GameScores = 
+var gameScores = 
 [
     [new HoleScores(), new HoleScores(), new HoleScores(), new HoleScores(), new HoleScores(), new HoleScores(), new HoleScores(), new HoleScores(),],
     [new HoleScores(), new HoleScores(), new HoleScores(), new HoleScores(), new HoleScores(), new HoleScores(), new HoleScores(), new HoleScores(),],
@@ -238,7 +268,7 @@ function refreshScoreboard()
     var outString = "";
 
 
-    if (GameMode == RuleStrings[0])
+    if (gameMode == RuleStrings[0])
     {
         //total up the current scores then sort by lowest total
         var sortArray = new Array();
@@ -258,7 +288,7 @@ function refreshScoreboard()
 
                     for (var k = 0; k < 18; ++k)
                     {
-                        item.scores.scores[k] = GameScores[i][j].scores[k];
+                        item.scores.scores[k] = gameScores[i][j].scores[k];
                         item.total += item.scores.scores[k];
                     }
                     sortArray.push(item);
@@ -278,7 +308,7 @@ function refreshScoreboard()
         //grab the par for each hole
         for (var i = 0; i < 18; ++i)
         {
-            outString += HoleData[i].par + " - ";
+            outString += holeData[i].par + " - ";
         }
         outString += "-- Par<br>";
 
@@ -310,17 +340,17 @@ function refreshScoreboard()
 
     else
     {
-        outString += GameMode + ": Example not implemented, see example.js refreshScoreboard()";
+        outString += gameMode + ": Example not implemented, see example.js refreshScoreboard()";
     }
 
     
-    //CurrentHole is an index into the data array
+    //currentHole is an index into the data array
     //so we need to correct for reverse course or
     //back nine before displaying it
-    var hole = CurrentHole;
-    if (ReverseOrder)
+    var hole = currentHole;
+    if (reverseOrder)
     {
-        switch (HoleCount)
+        switch (holeCount)
         {
         case 0:
             hole = 18 - hole;
@@ -336,7 +366,7 @@ function refreshScoreboard()
     }
     else
     {
-        if (HoleCount == 2)
+        if (holeCount == 2)
         {
             hole += 9;
         }
@@ -344,14 +374,14 @@ function refreshScoreboard()
     }
 
 
-    outString += "<br>Current Hole: " + hole + ", Current Player: " + playerNames[CurrentPlayer.clientID][CurrentPlayer.playerID].name + ", Terrain: " + TerrainStrings[CurrentPlayer.terrainID];
+    outString += "<br>Current Hole: " + hole + ", Current Player: " + playerNames[currentPlayer.clientID][currentPlayer.playerID].name + ", Terrain: " + TerrainStrings[currentPlayer.terrainID];
 
-    var nightStr = NightMode ? " - Night" : " - Day";
-    outString += "<br>" + CourseName + " - " + HoleStrings[HoleCount] + " - " + GameMode + " - Weather: " + Weather + nightStr;
+    var nightStr = nightMode ? " - Night" : " - Day";
+    outString += "<br>" + courseName + " - " + HoleStrings[holeCount] + " - " + gameMode + " - weather: " + weather + nightStr;
 
     outDiv.innerHTML = outString;
 }
 
 /* list of holes which make up the course, as HoleInfo objects */
-var HoleData = new Array(18);
-HoleData.fill(new HoleInfo(0,0,0,0,0,0,0,1));
+var holeData = new Array(18);
+holeData.fill(new HoleInfo(0,0,0,0,0,0,0,0));
