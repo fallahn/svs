@@ -12,6 +12,7 @@ With that said, just what is the websocket server useful for? Mostly, with it be
  - Team play matches. By default Super Video Golf doesn't support golf teams, however with the current round's scores continually updated a web application can group players into teams and calculate the final score accordingly.
  - Real world leagues, where player scores are entered into a database such as SQLite that automatically calculates (and perpetuates) league standing.
  - Mirroring the scoreboard or other information on a secondary display. For multiplayer hotseat games having a permanent scoreboard up on another TV or monitor would be more convenient than relying on the in-game UI
+ - And for those who are *really* enthusiatic it would be possible to use WebGL to create an interactive spectator client...
 
 And I'm sure with some creative thinking that there could be many more applications 😁
 
@@ -26,7 +27,7 @@ Boiler plate functions written in javascript and information on how they work is
 
 For other languages below is a list of the raw packets sent by Super Video Golf and how they would be represented as a C style struct. From there I hope it should be relatively easy to extrapolate to other programming languages.
 
-Make sure all websocket clients are set to use "bytearray" as the binary type.
+Make sure all websocket clients are set to use "bytearray" as the binary type. For the colour palette used by Super Video Golf, see [colordome-32](https://lospec.com/palette-list/colordome-32) at lospec.
 
 
 
@@ -51,7 +52,8 @@ Packet Data
 
 Note PacketIDs are non-contiguous and should never be assumed to be so! Multi-byte data types (eg float or int32) are little-endian.
 
-    //each websocket packet is ID'd with one of the below, taking up exactly 1 byte, and the very beginning of the packet.
+    //each websocket packet is ID'd with one of the below,
+    //taking up exactly 1 byte, and the very beginning of the packet.
     enum PacketID
     {
         Null               = -1;
@@ -65,7 +67,8 @@ Note PacketIDs are non-contiguous and should never be assumed to be so! Multi-by
 After the ID byte, each packet is then followed by one of these structs, packed as an array, depending on which ID the packet has.
 
 
-    //note that final packet size received from the websocket includes the entire name string in utf-8, appended to this struct
+    //note that final packet size received from the websocket
+    //includes the entire name string in utf-8, appended to this struct
     struct PlayerInfo
     {
         byte clientID;
@@ -75,7 +78,8 @@ After the ID byte, each packet is then followed by one of these structs, packed 
     };
 
 
-    //ClientDisconnect - contains a single byte with a client ID. All players on this client should be removed.
+    //ClientDisconnect - contains a single byte with a
+    //client ID. All players on this client should be removed.
     byte clientID;
 
 
@@ -86,9 +90,9 @@ After the ID byte, each packet is then followed by one of these structs, packed 
         float distanceScore;
         byte clientID;
         byte playerID;
-        byte stroke;
+        byte stroke; //score for current hole
         byte hole;
-        byte score;
+        byte score; //total score
         byte matchScore;
         byte skinsScore;
         byte padding;

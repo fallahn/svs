@@ -56,8 +56,10 @@ function onConnectClick()
 
     socket.onmessage = function(evt)
     {
+        //decode the packet using supervideo.js
         var data = getPacketData(evt);
         
+        //check the returned type so we know which packet data we received
         switch (data.type)
         {
         default:
@@ -89,7 +91,7 @@ function onConnectClick()
             refreshPlayerList();
             break;
         case PacketIDScoreUpdate:
-            GameScores[data.clientID][data.playerID].scores[data.hole] = data.score;
+            GameScores[data.clientID][data.playerID].scores[data.hole] = data.stroke;
             refreshScoreboard();
             break;
         case PacketIDMapInfo:
@@ -208,39 +210,89 @@ var GameScores =
 
 function refreshScoreboard()
 {
+    /*
+    How the game is scored is usually based on which game
+    mode is being played - so you would probably check that
+    first to decide how to lay out the display.
+    You can of course also create your own scoring rules here
+    such as team play scores, or wagering on skins.
+    For this example we'll only cover stroke play.
+    */
+
     var outDiv = document.getElementById("div_scoreboard_inner");
     outDiv.innerHTML = "";
 
     var outString = "";
 
-    //TODO we need to sort these by score before setting the HTML
-    //TODO this only relevant in stroke play - demonstrate how to calculate
-    //stableford for example.
-    for (var i = 0; i < MaxClients; ++i)
+
+    if (GameMode == RuleStrings[0])
     {
-        for (var j = 0; j < MaxPlayers; ++j)
+        //total up the current scores then sort by lowest total
+        var sortArray = new Array();
+
+        for (var i = 0; i < MaxClients; ++i)
         {
-            if (playerNames[i][j].name)
+            for (var j = 0; j < MaxPlayers; ++j)
             {
-                for (var k = 0; k < 18; ++k)
+                if (playerNames[i][j].name)
                 {
-                    outString += GameScores[i][j].scores[k] + " - ";
-                }
 
-                if(playerNames[i][j].isCPU)
-                {
-                    outString += "🤖 ";
-                }
-                else
-                {
-                    outString += "🧍 ";
-                }
+                    var item = new Object();
+                    item.name = playerNames[i][j].name;
+                    item.isCPU = playerNames[i][j].isCPU;
+                    item.scores = new HoleScores();
+                    item.total = 0;
 
-                outString += playerNames[i][j].name;
-                outString += "<br>";
+                    for (var k = 0; k < 18; ++k)
+                    {
+                        item.scores.scores[k] = GameScores[i][j].scores[k];
+                        item.total += item.scores.scores[k];
+                    }
+                    sortArray.push(item);
+                }
             }
         }
+
+
+        function sortFunc(a,b)
+        {
+            return a.total - b.total;
+        }
+
+        sortArray.sort(sortFunc);
+
+
+
+        //and output the results to HTML
+        for (var i = 0; i < sortArray.length; ++i)
+        {
+            for (var k = 0; k < 18; ++k)
+            {
+                outString += sortArray[i].scores.scores[k] + " - ";
+            }
+
+            outString += " -- Total: " + sortArray[i].total;
+
+            if (sortArray[i].isCPU)
+            {
+                outString += " 🤖 ";
+            }
+            else
+            {
+                outString += " 🧍 ";
+            }
+
+            outString += sortArray[i].name;
+            outString += "<br>";
+        }
+
     }
+
+    else
+    {
+        outString += GameMode + ": Example not implemented, see example.js refreshScoreboard()";
+    }
+
 
     var nightStr = NightMode ? " - Night" : " - Day";
     outString += "<br>" + CourseName + " - " + HoleCount + " - " + GameMode + " - Weather: " + Weather + nightStr;
