@@ -11,7 +11,7 @@ With that said, just what is the websocket server useful for? Mostly, with it be
  - More local player interaction. Multple connections can be made to a single golf client, meaning that perhaps players can each connect with their smart phones, and use those as additional inputs, such as voting for a new map or who should be player of the game.
  - Team play matches. By default Super Video Golf doesn't support golf teams, however with the current round's scores continually updated a web application can group players into teams and calculate the final score accordingly.
  - Real world leagues, where player scores are entered into a database such as SQLite that automatically calculates (and perpetuates) league standing.
- - Mirroring the scoreboard or other information on a secondary display. For multiplayer hotseat games having a permanent scoreboard up on another TV or monitor can be more convenient than relying on the in-game UI when another play is taking their turn.
+ - Mirroring the scoreboard or other information on a secondary display. For multiplayer hotseat games having a permanent scoreboard up on another TV or monitor can be more convenient than relying on the in-game UI when another player is taking their turn.
  - And for those who are *really* enthusiatic it would be possible to use WebGL to create an interactive spectator client...
 
 I'm sure with some creative thinking that there could be many more applications 😁
@@ -117,10 +117,12 @@ After the ID byte, each packet is then followed by one of these structs, packed 
 
 
     //OpenGL coordinates, eg Y-up
+    //data alignment is on 4 bytes, hence padding
     struct HoleInfo
     {
         byte index;
         byte par;
+        byte[2] padding;
         float teeX;
         float teeY;
         float teeZ;
@@ -141,6 +143,21 @@ After the ID byte, each packet is then followed by one of these structs, packed 
         byte terrainID;
     }
 
+
+    //actor updates contain ball movements.
+    struct ActorUpdate
+    {
+        float posX;
+        float posY;
+        float posZ;
+        byte clientID;
+        byte playerID;
+        byte terrainID;
+        int32 timestamp; //use this to interpolate positions and remove out of order packets
+    }
+
+
+    //rich presence strings are sent as a utf-8 encoded byte array
 
 License
 -------

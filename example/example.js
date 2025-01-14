@@ -120,11 +120,17 @@ function onConnectClick()
             holeData[data.index] = data;
             currentHole = data.index;
             refreshScoreboard();
+            redrawCanvas();
             break;
 
         case PacketIDActivePlayer:
             currentPlayer = data;
             refreshScoreboard();
+            break;
+
+        case PacketIDPlayerPosition:
+            playerPositions[data.clientID][data.playerID] = data.position;
+            redrawCanvas();
             break;
 
         case PacketIDRichPresence:
@@ -410,3 +416,76 @@ This is where we store all the par values and pin/tee positions
 */
 var holeData = new Array(18);
 holeData.fill(new HoleInfo(0,0,0,0,0,0,0,0));
+
+
+/*
+This redraws the canvas when a player position update is received.
+For brevity this is done on each update, however for smooth animation
+you would want to use the timestamp in the position updates to remove
+out of order packets and interpolate positions of buffered events
+using requestAnimationFrame to update at a smooth framerate.
+
+Position updates are broadcast at ~20fps, but there are no gaurantees
+on arrival time over a web socket.
+*/
+var playerPositions = 
+[
+    [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]],
+    [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]],
+    [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]],
+    [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]],
+    [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]],
+    [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]],
+    [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]],
+    [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]],
+];
+
+
+const BallSize = [2, 2];
+const TeeSize = [3, 3];
+const FlagSize = [1, 6];
+function redrawCanvas()
+{
+    var ctx = document.getElementById("game_canvas").getContext("2d");
+    ctx.font = "16px serif";
+  
+    //background
+    ctx.clearRect(0, 0, MapSize[0], MapSize[1]);
+    ctx.fillStyle = "rgb(0 200 0)";
+    ctx.fillRect(0, 0, MapSize[0], MapSize[1]);
+
+    //when mapping world coords to the canvas X==X and Y==-Z
+    var x = holeData[currentHole].teePosition[0];
+    var y = -holeData[currentHole].teePosition[2];
+    ctx.fillStyle = "rgb(200 0 0)";
+    ctx.fillRect(x - TeeSize[0], y - TeeSize[1], TeeSize[0] * 2, TeeSize[1] * 2);
+    ctx.fillStyle = "rgb(0 0 0)";
+    ctx.fillText("T", x + 4, y + 16);
+
+
+    x = holeData[currentHole].pinPosition[0];
+    y = -holeData[currentHole].pinPosition[2];
+    ctx.fillStyle = "rgb(255 255 255)";
+    ctx.fillRect(x - FlagSize[0], y - FlagSize[1], FlagSize[0] * 2, FlagSize[1] * 2);
+
+    ctx.fillStyle = "rgb(0 0 0)";
+    ctx.fillText("P", x + 4, y + 16);
+
+    for (var i = 0; i < MaxClients; ++i)
+    {
+        for (var j = 0; j < MaxPlayers; ++j)
+        {
+            if (playerNames[i][j].name)
+            {
+                x = playerPositions[i][j][0];
+                y = -playerPositions[i][j][2];
+
+                ctx.fillStyle = "rgb(255 240 120)";
+                ctx.fillRect(x - BallSize[0], y - BallSize[1], BallSize[0] * 2, BallSize[1] * 2);
+
+                ctx.fillStyle = "rgb(0 0 0)";
+                ctx.fillText(playerNames[i][j].name, x + 4, y + 16);
+            }
+        }
+    }
+}

@@ -10,6 +10,9 @@ file provided in the repository at https://github.com/fallahn/svs.
 */
 
 
+//const values - these are here so they can be accessed via the relevant IDs
+//received in the data packets from Super Video Golf.
+
 const CourseNames = 
 [
     "Westington Links, Isle of Pendale",
@@ -71,6 +74,8 @@ const TerrainStrings =
     "Hole"
 ];
 
+//map units are metres
+const MapSize = [560, 320];
 
 //packet IDs are used to identify what has been collected from the incoming socket
 //Don't change these! They're set by the game server.
@@ -160,19 +165,31 @@ function getPacketData(packet)
         return new HoleInfo(
             view.getUint8(1),
             view.getUint8(2),
-            view.getFloat32(3, true),
-            view.getFloat32(7, true),
-            view.getFloat32(11, true),
-            view.getFloat32(15, true));
+            view.getFloat32(5, true),
+            view.getFloat32(9, true),
+            view.getFloat32(13, true),
+            view.getFloat32(17, true),
+            view.getFloat32(21, true),
+            view.getFloat32(25, true));
 
     case PacketIDActivePlayer:
         return new ActivePlayer(
+            view.getUint8(13),
+            view.getUint8(14),            
             view.getFloat32(1, true),
             view.getFloat32(5, true),
             view.getFloat32(9, true),
-            view.getUint8(13),
-            view.getUint8(14),
             view.getUint8(15));
+
+    case PacketIDPlayerPosition:
+        return new ActorUpdate(
+            view.getUint8(13),
+            view.getUint8(14),            
+            view.getFloat32(1, true),
+            view.getFloat32(5, true),
+            view.getFloat32(9, true),
+            view.getUint8(15),
+            view.getInt32(16, true));
 
     case PacketIDRichPresence:
         var decoder = new TextDecoder();
@@ -259,7 +276,7 @@ HoleInfo.prototype.type = PacketIDHoleInfo;
 
 
 //currently active player
-function ActivePlayer(posX, posY, posZ, clientID, playerID, terrainID)
+function ActivePlayer(clientID, playerID, posX, posY, posZ, terrainID)
 {
     this.position = [posX, posY, posZ];
     this.clientID = clientID;
@@ -267,6 +284,17 @@ function ActivePlayer(posX, posY, posZ, clientID, playerID, terrainID)
     this.terrainID = terrainID;
 }
 ActivePlayer.prototype.type = PacketIDActivePlayer;
+
+//actor update, in this case ball position
+function ActorUpdate(clientID, playerID, posX, posY, posZ, terrainID, timestamp)
+{
+    this.clientID = clientID;
+    this.playerID = playerID;
+    this.position = [posX, posY, posZ];
+    this.terrainID = terrainID;
+    this.timestamp = timestamp;
+}
+ActorUpdate.prototype.type = PacketIDPlayerPosition;
 
 
 function RichPresence(string)
