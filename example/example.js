@@ -173,7 +173,7 @@ function resetDisplay()
     courseName = "";
     holeCount = 0;
     reverseOrder = false;
-    gameMode = ";"
+    gameMode = "";
     weather = "";
     nightMode = false;
     currentHole = 0;
@@ -310,7 +310,6 @@ function refreshScoreboard()
             {
                 if (playerNames[i][j].name)
                 {
-
                     var item = new Object();
                     item.name = playerNames[i][j].name;
                     item.isCPU = playerNames[i][j].isCPU;
@@ -332,7 +331,6 @@ function refreshScoreboard()
         {
             return a.total - b.total;
         }
-
         sortArray.sort(sortFunc);
 
 
@@ -367,9 +365,7 @@ function refreshScoreboard()
             outString += sortArray[i].name;
             outString += "<br>";
         }
-
     }
-
     else
     {
         outString += gameMode + ": Example not implemented, see example.js refreshScoreboard()";
@@ -466,7 +462,7 @@ function redrawCanvas()
 
     //tee pos
     var x = holeData[currentHole].teePosition[0];
-    var y = -holeData[currentHole].teePosition[2];
+    var y = MapSize[1] + holeData[currentHole].teePosition[2];
     ctx.fillStyle = "rgb(200 0 0)";
     ctx.fillRect(x - TeeSize[0], y - TeeSize[1], TeeSize[0] * 2, TeeSize[1] * 2);
     ctx.fillStyle = "rgb(0 0 0)";
@@ -475,7 +471,7 @@ function redrawCanvas()
 
     //pin pos
     x = holeData[currentHole].pinPosition[0];
-    y = -holeData[currentHole].pinPosition[2];
+    y = MapSize[1] + holeData[currentHole].pinPosition[2];
     ctx.fillStyle = "rgb(255 255 255)";
     ctx.fillRect(x - FlagSize[0], y - FlagSize[1], FlagSize[0] * 2, FlagSize[1] * 2);
 
@@ -491,7 +487,7 @@ function redrawCanvas()
             if (playerNames[i][j].name)
             {
                 x = playerPositions[i][j][0];
-                y = -playerPositions[i][j][2];
+                y = MapSize[1] + playerPositions[i][j][2];
 
                 ctx.fillStyle = "rgb(255 240 120)";
                 ctx.fillRect(x - BallSize[0], y - BallSize[1], BallSize[0] * 2, BallSize[1] * 2);
