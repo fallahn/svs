@@ -115,9 +115,6 @@ like:
 
 function getPacketData(packet)
 {
-    //docs are infuriatingly hard to navigate - how do we know this isn't
-    //text? (other than the fact SVG should never send text)
-
     const view = new DataView(packet.data);
     const id = view.getUint8(0);
 

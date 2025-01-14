@@ -98,7 +98,7 @@ function onConnectClick()
             break;
 
         case PacketIDScoreUpdate:
-            //this only tracks stroke play - data also contains fields
+            //this example only tracks stroke play - data also contains fields
             //for skins/match play etc. See the readme or supervideo.js
             //for more information about the score data available.
             gameScores[data.clientID][data.playerID].scores[data.hole] = data.stroke;
@@ -165,6 +165,7 @@ function resetDisplay()
         {
             playerNames[i][j] = new PlayerEntry("", false);
             gameScores[i][j] = new HoleScores();
+            playerPositions[i][j] = [0,0,0];
         }
     }
 
@@ -183,6 +184,9 @@ function resetDisplay()
     document.getElementById("rich_presence").innerHTML = "";
     document.getElementById("div_namelist_inner").innerHTML = "";
     document.getElementById("div_scoreboard_inner").innerHTML = "";
+
+    var ctx = document.getElementById("game_canvas").getContext("2d");
+    ctx.clearRect(0, 0, MapSize[0], MapSize[1]);
 }
 
 
@@ -410,6 +414,8 @@ function refreshScoreboard()
     outDiv.innerHTML = outString;
 }
 
+
+
 /*
 list of holes which make up the course, as HoleInfo objects 
 This is where we store all the par values and pin/tee positions
@@ -422,7 +428,7 @@ holeData.fill(new HoleInfo(0,0,0,0,0,0,0,0));
 This redraws the canvas when a player position update is received.
 For brevity this is done on each update, however for smooth animation
 you would want to use the timestamp in the position updates to remove
-out of order packets and interpolate positions of buffered events
+out of order packets and interpolate positions of buffered events,
 using requestAnimationFrame to update at a smooth framerate.
 
 Position updates are broadcast at ~20fps, but there are no gaurantees
@@ -444,6 +450,7 @@ var playerPositions =
 const BallSize = [2, 2];
 const TeeSize = [3, 3];
 const FlagSize = [1, 6];
+
 function redrawCanvas()
 {
     var ctx = document.getElementById("game_canvas").getContext("2d");
@@ -454,7 +461,10 @@ function redrawCanvas()
     ctx.fillStyle = "rgb(0 200 0)";
     ctx.fillRect(0, 0, MapSize[0], MapSize[1]);
 
-    //when mapping world coords to the canvas X==X and Y==-Z
+    //when mapping world coords to the canvas X==X and Y==-Z (negative Z)
+    //the canvas is also flipped vertically relative to the game world
+
+    //tee pos
     var x = holeData[currentHole].teePosition[0];
     var y = -holeData[currentHole].teePosition[2];
     ctx.fillStyle = "rgb(200 0 0)";
@@ -463,6 +473,7 @@ function redrawCanvas()
     ctx.fillText("T", x + 4, y + 16);
 
 
+    //pin pos
     x = holeData[currentHole].pinPosition[0];
     y = -holeData[currentHole].pinPosition[2];
     ctx.fillStyle = "rgb(255 255 255)";
@@ -471,6 +482,8 @@ function redrawCanvas()
     ctx.fillStyle = "rgb(0 0 0)";
     ctx.fillText("P", x + 4, y + 16);
 
+
+    //each player's ball pos
     for (var i = 0; i < MaxClients; ++i)
     {
         for (var j = 0; j < MaxPlayers; ++j)
