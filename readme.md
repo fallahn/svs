@@ -14,7 +14,7 @@ With that said, just what is the websocket server useful for? Mostly, with it be
  - Mirroring the scoreboard or other information on a secondary display. For multiplayer hotseat games having a permanent scoreboard up on another TV or monitor can be more convenient than relying on the in-game UI when another player is taking their turn.
  - And for those who are *really* enthusiatic it would be possible to use WebGL to create an interactive spectator client...
 
-I'm sure with some creative thinking that there could be many more applications 😁
+Either in a web browser or coupled with [Capcitor](https://capacitorjs.com/) (android/iOS) or [Electron](https://www.electronjs.org/) (win/lin/mac desktop) I'm sure that with some creative thinking there could be many more applications 😁
 
 
 
