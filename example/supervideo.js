@@ -186,7 +186,7 @@ function getPacketData(packet)
             view.getFloat32(5, true),
             view.getFloat32(9, true),
             view.getUint8(15),
-            view.getInt32(16, true));
+            view.getInt32(17, true));
 
     case PacketIDRichPresence:
         var decoder = new TextDecoder();

@@ -155,6 +155,7 @@ After the ID byte, each packet is then followed by one of these structs, packed 
         byte clientID;
         byte playerID;
         byte terrainID;
+        byte padding;
         int32 timestamp; //use this to interpolate positions and remove out of order packets
     }
 
