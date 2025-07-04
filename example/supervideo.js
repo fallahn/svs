@@ -74,6 +74,18 @@ const TerrainStrings =
     "Hole"
 ];
 
+const TeamColours = 
+[
+    rgb(255,0,0),
+    rgb(0,255,0),
+    rgb(0,0,255),
+    rgb(255,255,0),
+    rgb(255,127,0),
+    rgb(127,0,255),
+    rgb(0,0,0),
+    rgb(255,255,255)
+];
+
 //map units are metres
 const MapSize = [560, 320];
 
@@ -87,6 +99,12 @@ const PacketIDMapInfo            = 63;
 const PacketIDHoleInfo           = 10;
 const PacketIDActivePlayer       = 9;
 const PacketIDPlayerPosition     = 22;
+const PacketIDTeamModeToggle     = 91;
+const PacketIDTeamData           = 92;
+const PacketIDDisplayList        = 93;
+const PacketIDRuleMod            = 94;
+const PacketIDSnekUpdate         = 95;
+const PacketIDBigBallUpdate      = 96;
 const PacketIDRichPresence       = 127;
 
 
@@ -187,6 +205,45 @@ function getPacketData(packet)
             view.getFloat32(9, true),
             view.getUint8(15),
             view.getInt32(17, true));
+
+    case PacketIDTeamModeToggle:
+        return view.getInt32(1, true);
+
+    case PacketIDTeamData:
+        return new TeamData(
+            view.getUint16(5, true),
+            view.getUint16(7, true),
+            view.getInt32(1, true));
+
+    case PacketIDDisplayList:
+        const size = view.getInt32(1, true);
+        var list = new DisplayList(size);
+        
+        //hmm how does js assert things?
+        //size MUST be <= 16
+        for(var i = 0; i < size; ++i)
+        {
+            const client = view.getUint8(5 + (i*2));
+            const player = view.getUint8(5 + ((i*2) + 1));
+            list.list.push(new TeamMember(client, player));
+        }
+        return list;
+
+    case PacketIDRuleMod:
+        return new RuleMod(
+            view.getUint8(1),
+            view.getUint8(2));
+
+    case PacketIDSnekUpdate:
+        return new SnekUpdate(
+            view.getUint8(1),
+            view.getUint8(2));
+
+    case PacketIDBigBallUpdate:
+        return new BigBallUpdate(
+            view.getUint8(1),
+            view.getUint8(2),
+            view.getUint16(3, true));
 
     case PacketIDRichPresence:
         var decoder = new TextDecoder();
@@ -292,6 +349,67 @@ function ActorUpdate(clientID, playerID, posX, posY, posZ, terrainID, timestamp)
     this.timestamp = timestamp;
 }
 ActorUpdate.prototype.type = PacketIDPlayerPosition;
+
+
+//-----since version 1.21------//
+
+//team member mapping
+function TeamData(clientID, playerID, teamIndex)
+{
+    this.clientID = clientID;
+    this.playerID = playerID;
+    this.teamIndex = teamIndex;
+}
+TeamData.prototype.type = PacketIDTeamData;
+
+function TeamMember(clientID, playerID)
+{
+    this.clientID = clientID;
+    this.playerID = playerID;
+}
+
+function DisplayList(size)
+{
+    this.size = size;
+    this.list = [];
+}
+DisplayLisy.prototype.type = PacketIDDisplayList;
+
+//rule modifier has been toggled.
+function RuleMod(rule, status)
+{
+    this.rule = rule; //0 for Snek, 1 for BigBall
+    this.status = status; //0 for disable, 1 for enable
+}
+RuleMod.prototype.type = PacketIDRuleMod;
+
+//snek update - this player was handed the snek
+function SnekUpdate(clientID, playerID)
+{
+    this.clientID = clientID;
+    this.playerID = playerID;
+}
+SnekUpdate.prototype.type = PacketIDSnekUpdate;
+
+function BigBallUpdate(clientID, playerID, scale)
+{
+    this.clientID = clientID;
+    this.playerID = playerID;
+
+    //scale arrives as a value 0-11 but the result
+    //is actually rescaled to -5 through 0 and
+    //doubled for positive values 0 - 15
+
+    //this is then multiplied by 0.1 for a final
+    //scale value which should be *added* to the
+    //current scale of the ball, bringing the total
+    //range to 0.5 - 3.0
+
+    this.scale = scale - 6;
+    this.scale *= (1 + ((scale < 1  ? 0 : 1) * 2));
+    this.scale *= 0.1;
+}
+BigBallUpdate.prototype.type = PacketIDBigBallUpdate;
 
 
 function RichPresence(string)

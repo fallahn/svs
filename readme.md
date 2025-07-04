@@ -42,6 +42,9 @@ Data packets broadcast by Super Video Golf (details below):
  - Hole data: Sent on round start, and when a hole is changed
  - Active Player: Sent on connection and when current player is changed
  - Position Updates: Sent during the current round
+ - Team mode: Toggle status, player to team mapping and team display order (1.21)
+ - Rule modifier toggle (1.21)
+ - Snek and Big Ball updates: Sent during the round (1.21)
  - Rich presence strings: Rather than a struct these are sent as a single utf-8 encoded byte array
 
 
@@ -67,6 +70,12 @@ Note PacketIDs are non-contiguous and should never be assumed to be so! Multi-by
         HoleInfo           = 10;
         ActivePlayer       = 9;
         PlayerPosition     = 22;
+        TeamMode           = 91; //since 1.21
+        TeamMapping        = 92; //since 1.21
+        DisplayList        = 93; //since 1.21
+        RuleMod            = 94; //since 1.21
+        SnekUpdate         = 95; //since 1.21
+        BigBallUpdate      = 96; //since 1.21
         RichPresence       = 127;
     }
 
@@ -157,6 +166,46 @@ After the ID byte, each packet is then followed by one of these structs, packed 
         byte terrainID;
         byte padding;
         int32 timestamp; //use this to interpolate positions and remove out of order packets
+    }
+
+
+    //since 1.21
+    int32 teamMode; //toggles team play, 0 off, else on
+
+    //maps a player to a team index
+    struct TeamData
+    {
+        int32 teamIndex;
+        uint16 client;
+        uint16 player;
+    };
+
+    //list of lobby members to display - used for team pairings
+    //as each pair or players are teamed together
+    struct DisplayList
+    {
+        int32 count; //number of players in this list, with a stride of 2 bytes
+        byte[32] players; //alternating client/player IDs in the order in which to be displayed
+    }
+
+    //a rule modifier has been applied or removed
+    struct RuleMod
+    {
+        byte modID; //currently 0 for Snek and 1 for Big Balls
+        byte state; //0 for disabled 1 for enabled
+    };
+
+    struct SnekUpdate
+    {
+        byte client;
+        byte player; //this player has just been handed the Snek
+    };
+
+    struct BigBallUpdate
+    {
+        byte client;
+        byte player;
+        uint16 scale; //note this arrives as a value 0-11 but is rescaled, see BigBallUpdate in supervideo.js
     }
 
 
