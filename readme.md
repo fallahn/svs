@@ -9,7 +9,7 @@ With that said, just what is the websocket server useful for? Mostly, with it be
 
  - Creating overlays for streaming. Custom score outputs or even map overlays (using the ball position updates) can be conjoured in a web page with relative ease.
  - More local player interaction. Multple connections can be made to a single golf client, meaning that perhaps players can each connect with their smart phones, and use those as additional inputs, such as voting for the next course or who should be player of the game.
- - Team play matches. By default Super Video Golf doesn't support golf teams, however with the current round's scores continually updated a web application can group players into teams and calculate the final score accordingly.
+ - Team play matches. ~~By default Super Video Golf doesn't support golf teams, however with the current round's scores continually updated a web application can group players into teams and calculate the final score accordingly.~~ This was added in update 1.21!
  - Real world leagues, where player scores are entered into a database such as SQLite that automatically calculates (and perpetuates) league standing.
  - Mirroring the scoreboard or other information on a secondary display. For multiplayer hotseat games having a permanent scoreboard up on another TV or monitor can be more convenient than relying on the in-game UI when another player is taking their turn.
  - And for those who are *really* enthusiatic it would be possible to use WebGL to create an interactive spectator client...
